@@ -433,7 +433,10 @@
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) throw new Error('Falha na resposta do servidor');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.mensagem || 'Falha na resposta do servidor');
+      }
 
       const data = await res.json();
 
@@ -459,7 +462,7 @@
       waActions.classList.add('show');
 
     } catch (err) {
-      showStatus('Não foi possível calcular agora. Confira a URL do webhook e tente de novo.', true);
+      showStatus(err.message || 'Não foi possível calcular agora. Tente novamente.', true);
     } finally {
       ctaBtn.disabled = false;
     }
