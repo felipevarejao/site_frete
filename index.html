@@ -113,7 +113,7 @@
     margin-bottom: 6px;
   }
 
-  input[type="text"], select {
+  input[type="text"], input[type="date"], input[type="time"], select {
     width: 100%;
     background: var(--bg-inset);
     border: 1px solid var(--line);
@@ -125,7 +125,7 @@
     appearance: none;
   }
 
-  input[type="text"]:focus, select:focus {
+  input[type="text"]:focus, input[type="date"]:focus, input[type="time"]:focus, select:focus {
     outline: none;
     border-color: var(--amber);
   }
@@ -333,6 +333,17 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="field">
+          <label for="data_agendamento">Data</label>
+          <input type="date" id="data_agendamento">
+        </div>
+        <div class="field">
+          <label for="hora_agendamento">Horário</label>
+          <input type="time" id="hora_agendamento">
+        </div>
+      </div>
+
       <div class="field" data-field="volume">
         <label for="volume">Volume da entrega</label>
         <select id="volume">
@@ -436,15 +447,24 @@
     const cepOrigem = document.getElementById('cep_origem').value.trim();
     const cepDestino = document.getElementById('cep_destino').value.trim();
 
+    const dataAgendamento = document.getElementById('data_agendamento').value;
+    const horaAgendamento = document.getElementById('hora_agendamento').value;
+
     if (!cepOrigem || !cepDestino) {
       showStatus('Preencha os dois CEPs.', true);
+      return;
+    }
+
+    if (!dataAgendamento || !horaAgendamento) {
+      showStatus('Escolha a data e o horário.', true);
       return;
     }
 
     const payload = {
       tipo_servico: mode,
       cep_origem: cepOrigem,
-      cep_destino: cepDestino
+      cep_destino: cepDestino,
+      data_agendamento: `${dataAgendamento}T${horaAgendamento}:00-03:00`
     };
 
     if (mode === 'frete') {
