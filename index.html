@@ -162,61 +162,6 @@
     font-size: 15px;
   }
 
-  .checkbox-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--bg-inset);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 12px 14px;
-    margin-bottom: 18px;
-  }
-
-  .checkbox-row .label-text {
-    font-size: 14px;
-  }
-
-  .checkbox-row .sub {
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-top: 2px;
-  }
-
-  .switch {
-    position: relative;
-    width: 40px;
-    height: 22px;
-    flex-shrink: 0;
-  }
-
-  .switch input { opacity: 0; width: 0; height: 0; }
-
-  .slider {
-    position: absolute;
-    inset: 0;
-    background: var(--line);
-    border-radius: 999px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-
-  .slider::before {
-    content: "";
-    position: absolute;
-    height: 16px;
-    width: 16px;
-    left: 3px;
-    top: 3px;
-    background: var(--text);
-    border-radius: 50%;
-    transition: transform 0.2s ease;
-  }
-
-  input:checked + .slider { background: var(--amber); }
-  [data-mode-panel="carona"] input:checked + .slider { background: var(--teal); }
-  input:checked + .slider::before { transform: translateX(18px); }
-
   .cta {
     width: 100%;
     border: none;
@@ -344,6 +289,11 @@
         </div>
       </div>
 
+      <div class="field" data-field="descricao">
+        <label for="descricao_produto">O que vai ser transportado?</label>
+        <input type="text" id="descricao_produto" placeholder="Ex: Caixa, Móvel, etc.">
+      </div>
+
       <div class="field" data-field="volume">
         <label for="volume">Volume da entrega</label>
         <select id="volume">
@@ -382,15 +332,13 @@
 </div>
 
 <script>
-  // ====== CONFIGURAÇÃO ======
-  // Troque pela URL de produção do seu Webhook do n8n
   const WEBHOOK_URL = "https://varejao.app.n8n.cloud/webhook/deca9363-b30a-4601-b984-ac43f96e7ac3";
-  const WHATSAPP_NUMBER = "5511958767548"; // número do entregador, formato internacional sem +
-  // ===========================
+  const WHATSAPP_NUMBER = "5511958767548";
 
   const panel = document.querySelector('.panel');
   const toggleButtons = document.querySelectorAll('.toggle button');
   const volumeField = document.querySelector('[data-field="volume"]');
+  const descField = document.querySelector('[data-field="descricao"]');
   const paxField = document.querySelector('[data-field="passageiros"]');
   const ctaBtn = document.getElementById('cta-btn');
   const form = document.getElementById('calc-form');
@@ -408,6 +356,7 @@
       toggleButtons.forEach(b => b.classList.toggle('active', b === btn));
       panel.dataset.modePanel = mode;
       volumeField.style.display = mode === 'frete' ? 'block' : 'none';
+      descField.style.display = mode === 'frete' ? 'block' : 'none';
       paxField.style.display = mode === 'carona' ? 'block' : 'none';
       ctaBtn.textContent = mode === 'frete' ? 'Calcular frete' : 'Calcular carona';
       resetReceipt();
@@ -446,9 +395,9 @@
 
     const cepOrigem = document.getElementById('cep_origem').value.trim();
     const cepDestino = document.getElementById('cep_destino').value.trim();
-
     const dataAgendamento = document.getElementById('data_agendamento').value;
     const horaAgendamento = document.getElementById('hora_agendamento').value;
+    const descricaoProduto = document.getElementById('descricao_produto').value.trim();
 
     if (!cepOrigem || !cepDestino) {
       showStatus('Preencha os dois CEPs.', true);
@@ -464,7 +413,8 @@
       tipo_servico: mode,
       cep_origem: cepOrigem,
       cep_destino: cepDestino,
-      data_agendamento: `${dataAgendamento}T${horaAgendamento}:00-03:00`
+      data_agendamento: `${dataAgendamento}T${horaAgendamento}:00-03:00`,
+      descricao_produto: descricaoProduto
     };
 
     if (mode === 'frete') {
@@ -502,7 +452,7 @@
       statusEl.classList.remove('show');
 
       const texto = mode === 'frete'
-        ? `Olá! Gostaria de cotar um frete de ${cepOrigem} para ${cepDestino}. Distância: ${data.distancia_km} km. Total: ${formatBRL(data.total)}`
+        ? `Olá! Gostaria de cotar um frete de ${cepOrigem} para ${cepDestino}. Item: ${descricaoProduto || 'Não informado'}. Distância: ${data.distancia_km} km. Total: ${formatBRL(data.total)}`
         : `Olá! Gostaria de solicitar uma carona de ${cepOrigem} para ${cepDestino}, ${paxCount} passageiro(s). Distância: ${data.distancia_km} km. Total: ${formatBRL(data.total)}`;
 
       waLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
