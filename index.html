@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rota & Tarifa</title>
+<style>
+  :root {
+    --bg: #15181c;
+    --bg-panel: #1c2025;
+    --bg-inset: #101316;
+    --line: #2a2f36;
+    --text: #eef0ee;
+    --text-dim: #9aa1a9;
+    --amber: #f2a93b;
+    --amber-dim: #7a5a24;
+    --teal: #2f7a6f;
+    --teal-dim: #1e4e47;
+    --danger: #d9694f;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 80px;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 28px;
+    line-height: 1.2;
+  }
+
+  .toggle {
+    display: flex;
+    background: var(--bg-inset);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .toggle button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 0;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .toggle button.active[data-mode="frete"] {
+    background: var(--amber);
+    color: #1a1400;
+  }
+
+  .toggle button.active[data-mode="carona"] {
+    background: var(--teal);
+    color: #eafaf6;
+  }
+
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+
+  .row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .field {
+    margin-bottom: 18px;
+    flex: 1;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  input[type="text"], select {
+    width: 100%;
+    background: var(--bg-inset);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    appearance: none;
+  }
+
+  input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: var(--amber);
+  }
+
+  [data-mode-panel="carona"] input:focus, [data-mode-panel="carona"] select:focus {
+    border-color: var(--teal);
+  }
+
+  .stepper {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg-inset);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .stepper button {
+    width: 44px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .stepper button:hover { background: rgba(255,255,255,0.05); }
+
+  .stepper .count {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-variant-numeric: tabular-nums;
+    font-size: 15px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-inset);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+  }
+
+  .checkbox-row .label-text {
+    font-size: 14px;
+  }
+
+  .checkbox-row .sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .switch input { opacity: 0; width: 0; height: 0; }
+
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--line);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .slider::before {
+    content: "";
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    top: 3px;
+    background: var(--text);
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+
+  input:checked + .slider { background: var(--amber); }
+  [data-mode-panel="carona"] input:checked + .slider { background: var(--teal); }
+  input:checked + .slider::before { transform: translateX(18px); }
+
+  .cta {
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    padding: 15px 0;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity 0.15s ease, transform 0.05s ease;
+  }
+
+  .cta:active { transform: scale(0.99); }
+  .cta:disabled { opacity: 0.5; cursor: default; }
+
+  [data-mode-panel="frete"] .cta { background: var(--amber); color: #1a1400; }
+  [data-mode-panel="carona"] .cta { background: var(--teal); color: #eafaf6; }
+
+  .receipt {
+    margin-top: 20px;
+    border-top: 1px dashed var(--line);
+    padding-top: 20px;
+    font-variant-numeric: tabular-nums;
+    display: none;
+  }
+
+  .receipt.show { display: block; }
+
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-dim);
+    padding: 5px 0;
+  }
+
+  .receipt-row.total {
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 700;
+    border-top: 1px solid var(--line);
+    margin-top: 8px;
+    padding-top: 12px;
+  }
+
+  .receipt-row.total .value { font-family: 'Courier New', monospace; }
+
+  .note {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
+  .whatsapp-actions {
+    display: none;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .whatsapp-actions.show { display: flex; }
+
+  .whatsapp-actions a {
+    flex: 1;
+    text-align: center;
+    padding: 13px 0;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+
+  .whatsapp-actions a.primary {
+    background: #25D366;
+    color: #06210f;
+    border-color: transparent;
+  }
+
+  .status {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 12px;
+    display: none;
+  }
+
+  .status.show { display: block; }
+  .status.error { color: var(--danger); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="eyebrow">Rota &amp; tarifa</div>
+  <h1>Calculadora de frete e carona</h1>
+
+  <div class="toggle">
+    <button data-mode="frete" class="active">Frete</button>
+    <button data-mode="carona">Carona</button>
+  </div>
+
+  <div class="panel" data-mode-panel="frete">
+    <form id="calc-form">
+      <div class="row">
+        <div class="field">
+          <label for="cep_origem">CEP de partida</label>
+          <input type="text" id="cep_origem" placeholder="00000-000" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="cep_destino">CEP de chegada</label>
+          <input type="text" id="cep_destino" placeholder="00000-000" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="field" data-field="volume">
+        <label for="volume">Volume da entrega</label>
+        <select id="volume">
+          <option value="baixo">Baixo — R$ 2,00/km</option>
+          <option value="medio" selected>Médio — R$ 2,50/km</option>
+          <option value="alto">Alto — R$ 2,80/km</option>
+        </select>
+      </div>
+
+      <div class="field" data-field="passageiros" style="display:none;">
+        <label>Passageiros</label>
+        <div class="stepper">
+          <button type="button" id="pax-minus">−</button>
+          <div class="count" id="pax-count">1</div>
+          <button type="button" id="pax-plus">+</button>
+        </div>
+      </div>
+
+      <button type="submit" class="cta" id="cta-btn">Calcular frete</button>
+    </form>
+
+    <div class="status" id="status"></div>
+
+    <div class="receipt" id="receipt">
+      <div class="receipt-row"><span>Distância (rota)</span><span class="value" id="r-dist">—</span></div>
+      <div class="receipt-row" id="r-tarifa-row"><span>Tarifa</span><span class="value" id="r-tarifa">—</span></div>
+      <div class="receipt-row total"><span>Total</span><span class="value" id="r-total">R$ 0,00</span></div>
+    </div>
+
+    <div class="whatsapp-actions" id="wa-actions">
+      <a href="#" id="wa-link" class="primary" target="_blank">Enviar cotação por WhatsApp</a>
+    </div>
+
+    <div class="note">Pedágio não incluso nesta fase de testes — será tratado à parte.</div>
+  </div>
+</div>
+
+<script>
+  // ====== CONFIGURAÇÃO ======
+  // Troque pela URL de produção do seu Webhook do n8n
+  const WEBHOOK_URL = "https://SEU-WORKFLOW.app.n8n.cloud/webhook/SEU-ID-AQUI";
+  const WHATSAPP_NUMBER = "5511999999999"; // número do entregador, formato internacional sem +
+  // ===========================
+
+  const panel = document.querySelector('.panel');
+  const toggleButtons = document.querySelectorAll('.toggle button');
+  const volumeField = document.querySelector('[data-field="volume"]');
+  const paxField = document.querySelector('[data-field="passageiros"]');
+  const ctaBtn = document.getElementById('cta-btn');
+  const form = document.getElementById('calc-form');
+  const statusEl = document.getElementById('status');
+  const receiptEl = document.getElementById('receipt');
+  const waActions = document.getElementById('wa-actions');
+  const waLink = document.getElementById('wa-link');
+
+  let mode = 'frete';
+  let paxCount = 1;
+
+  toggleButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      mode = btn.dataset.mode;
+      toggleButtons.forEach(b => b.classList.toggle('active', b === btn));
+      panel.dataset.modePanel = mode;
+      volumeField.style.display = mode === 'frete' ? 'block' : 'none';
+      paxField.style.display = mode === 'carona' ? 'block' : 'none';
+      ctaBtn.textContent = mode === 'frete' ? 'Calcular frete' : 'Calcular carona';
+      resetReceipt();
+    });
+  });
+  panel.dataset.modePanel = 'frete';
+
+  document.getElementById('pax-minus').addEventListener('click', () => {
+    paxCount = Math.max(1, paxCount - 1);
+    document.getElementById('pax-count').textContent = paxCount;
+  });
+  document.getElementById('pax-plus').addEventListener('click', () => {
+    paxCount = Math.min(4, paxCount + 1);
+    document.getElementById('pax-count').textContent = paxCount;
+  });
+
+  function resetReceipt() {
+    receiptEl.classList.remove('show');
+    waActions.classList.remove('show');
+    statusEl.classList.remove('show', 'error');
+  }
+
+  function formatBRL(value) {
+    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function showStatus(msg, isError) {
+    statusEl.textContent = msg;
+    statusEl.classList.add('show');
+    statusEl.classList.toggle('error', !!isError);
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    resetReceipt();
+
+    const cepOrigem = document.getElementById('cep_origem').value.trim();
+    const cepDestino = document.getElementById('cep_destino').value.trim();
+
+    if (!cepOrigem || !cepDestino) {
+      showStatus('Preencha os dois CEPs.', true);
+      return;
+    }
+
+    const payload = {
+      tipo_servico: mode,
+      cep_origem: cepOrigem,
+      cep_destino: cepDestino
+    };
+
+    if (mode === 'frete') {
+      payload.volume = document.getElementById('volume').value;
+    } else {
+      payload.passageiros = paxCount;
+    }
+
+    ctaBtn.disabled = true;
+    showStatus('Calculando...');
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Falha na resposta do servidor');
+
+      const data = await res.json();
+
+      document.getElementById('r-dist').textContent = `${data.distancia_km} km`;
+
+      if (mode === 'frete') {
+        document.getElementById('r-tarifa-row').style.display = 'flex';
+        document.getElementById('r-tarifa').textContent = `${formatBRL(data.tarifa_por_km)}/km`;
+      } else {
+        document.getElementById('r-tarifa-row').style.display = 'flex';
+        document.getElementById('r-tarifa').textContent = `${paxCount} passageiro(s)`;
+      }
+
+      document.getElementById('r-total').textContent = formatBRL(data.total);
+      receiptEl.classList.add('show');
+      statusEl.classList.remove('show');
+
+      const texto = mode === 'frete'
+        ? `Olá! Gostaria de cotar um frete de ${cepOrigem} para ${cepDestino}. Distância: ${data.distancia_km} km. Total: ${formatBRL(data.total)}`
+        : `Olá! Gostaria de solicitar uma carona de ${cepOrigem} para ${cepDestino}, ${paxCount} passageiro(s). Distância: ${data.distancia_km} km. Total: ${formatBRL(data.total)}`;
+
+      waLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
+      waActions.classList.add('show');
+
+    } catch (err) {
+      showStatus('Não foi possível calcular agora. Confira a URL do webhook e tente de novo.', true);
+    } finally {
+      ctaBtn.disabled = false;
+    }
+  });
+</script>
+
+</body>
+</html>
